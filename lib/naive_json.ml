@@ -10,10 +10,71 @@ module Json = struct
     | Null
 end
 
+module JsonToken = struct
+  type t =
+    | ObjectOpen
+    | ObjectClose
+    | ArrayOpen
+    | ArrayClose
+    | Colon
+    | Comma
+    | StringOpen
+    | StringClose
+    | Expression of string
+end
+
+let json_token_dump = function
+  | JsonToken.ObjectOpen -> "ObjectOpen"
+  | JsonToken.ObjectClose -> "ObjectClose"
+  | JsonToken.ArrayOpen -> "ArrayOpen"
+  | JsonToken.ArrayClose -> "ArrayClose"
+  | JsonToken.Colon -> "Colon"
+  | JsonToken.Comma -> "Comma"
+  | JsonToken.StringOpen -> "StringOpen"
+  | JsonToken.StringClose -> "StringClose"
+  | JsonToken.Expression s -> "Expr(" ^ s ^ ")"
+
+let _explode s = List.init (String.length s) (String.get s)
+
+let _tokenize_string s =
+  let char_list = _explode (String.trim s) in
+  let rec _tokenize_inner char_list expr_accum string_state =
+    match char_list with
+    | [] -> []
+    | h :: t -> (
+        let finish_ss token string_state =
+          (if List.is_empty expr_accum then [ token ]
+           else
+             [
+               JsonToken.Expression
+                 (String.of_seq (List.to_seq (List.rev expr_accum)));
+               token;
+             ])
+          @ _tokenize_inner t [] string_state
+        in
+        let finish token = finish_ss token string_state in
+        match h with
+        | '{' -> finish JsonToken.ObjectOpen
+        | '}' -> finish JsonToken.ObjectClose
+        | '[' -> finish JsonToken.ArrayOpen
+        | ']' -> finish JsonToken.ArrayClose
+        | ':' -> finish JsonToken.Colon
+        | ',' -> finish JsonToken.Comma
+        | '"' ->
+            finish_ss
+              (if string_state then JsonToken.StringClose
+               else JsonToken.StringOpen)
+              (not string_state)
+        | x -> _tokenize_inner t (x :: expr_accum) string_state)
+  in
+  _tokenize_inner char_list [] false
+
 let parse_json s = Json.Null
-let _stringify_func v f = f v
-let _stringify_number v = _stringify_func v string_of_int
-let _stringify_bool v = _stringify_func v string_of_bool
+
+(* string_of_json implementation *)
+
+let _stringify_number v = string_of_int v
+let _stringify_bool v = string_of_bool v
 let _stringify_null = "null"
 let _stringify_string v = "\"" ^ v ^ "\""
 
