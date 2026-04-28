@@ -34,6 +34,11 @@ let json_token_dump = function
   | JsonToken.StringClose -> "StringClose"
   | JsonToken.Expression s -> "Expr(" ^ s ^ ")"
 
+let _error_unexpected_end_of_tokens = Error "Unexpected end of tokens"
+
+let _error_unexpected_token token =
+  Error (Printf.sprintf "Unexpected token %s" (json_token_dump token))
+
 let _explode s = List.init (String.length s) (String.get s)
 
 let _tokenize_string s =
@@ -69,6 +74,65 @@ let _tokenize_string s =
   in
   _tokenize_inner char_list [] false
 
+let _parse_string tokens =
+  match tokens with
+  | JsonToken.StringOpen :: JsonToken.Expression s :: JsonToken.StringClose :: t
+    ->
+      Ok (Json.String s)
+  | token :: _ -> _error_unexpected_token token
+  | [] -> _error_unexpected_end_of_tokens
+
+let _parse_expression expr =
+  match expr with
+  | "true" -> Ok (Json.Bool true)
+  | "false" -> Ok (Json.Bool false)
+  | "null" -> Ok Json.Null
+  | _ -> (
+      match int_of_string_opt (String.trim expr) with
+      | Some num -> Ok (Json.Number num)
+      | None -> Error "Invalid Json.Number")
+
+let ( let* ) r f = match r with Error e -> Error e | Ok v -> f v
+
+let rec _parse_object_inner tokens =
+  match tokens with
+  | JsonToken.StringOpen
+    :: JsonToken.Expression key
+    :: JsonToken.StringClose :: JsonToken.Colon :: h :: t -> (
+      let* v =
+        match h with
+        | JsonToken.ObjectOpen -> _parse_object (h :: t)
+        | JsonToken.ArrayOpen -> _parse_array (h :: t)
+        | JsonToken.StringOpen -> _parse_string (h :: t)
+        | JsonToken.Expression e -> _parse_expression e
+        | _ -> _error_unexpected_token h
+      in
+      match t with
+      | JsonToken.ObjectClose :: _ -> Ok [ (key, v) ]
+      | JsonToken.Comma :: rest ->
+          let* r = _parse_object_inner rest in
+          Ok ((key, v) :: r)
+      | token :: _ -> _error_unexpected_token token
+      | [] -> _error_unexpected_end_of_tokens)
+  | token :: _ -> _error_unexpected_token token
+  | [] -> _error_unexpected_end_of_tokens
+
+and _parse_object tokens =
+  match tokens with
+  | JsonToken.ObjectOpen :: t ->
+      let* pairs = _parse_object_inner tokens in
+      let map =
+        List.fold_left
+          (fun acc (k, v) -> StringMap.add k v acc)
+          StringMap.empty pairs
+      in
+      Ok (Json.Object map)
+  | token :: _ -> _error_unexpected_token token
+  | [] -> _error_unexpected_end_of_tokens
+
+and _parse_array tokens = Ok Json.Null
+
+let _parse_json_tokens tokens = [ Json.Null ]
 let parse_json s = Json.Null
 
 (* string_of_json implementation *)
