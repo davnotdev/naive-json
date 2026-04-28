@@ -7,9 +7,16 @@ What the subset do not include:
 
 - [ ] Validation
 - [ ] Floating point numbers
-- [ ] Anything relating to backslash
 - [ ] Scientific notion
+- [ ] Anything relating to backslash
 
 If you are curious, JSON parsing is actually a nice programming exercise.
 [Look how concise it is!](https://www.json.org/json-en.html)
+
+Run using
+
+```shell
+dune build
+dune exec naive-json
+```
 
