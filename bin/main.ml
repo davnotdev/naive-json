@@ -1,7 +1,6 @@
 open Naive_json
 
 (* Test Stringify *)
-let () = print_endline "Testing stringify\n"
 let () =
   let obj =
     Json.Object
@@ -22,15 +21,27 @@ let () =
   let s = Naive_json.string_of_json obj in
   print_endline s
 
-(* Test Tokenizer *)
-let () = print_endline "\n\nTesting tokenizer\n"
+(* Test Everything*)
 let () =
-  let s = {|
+  let s =
+    {|
     {
         "username": "david",
-        "hello": ["array", 123]
+        "hello": ["array", 123, {
+            "smuggled": "object",
+            "in": true
+        }]
     }
-  |} in
-  Naive_json._tokenize_string s
-  |> List.map Naive_json.json_token_dump
-  |> List.iter print_endline
+  |}
+  in
+  let tokens = Naive_json._tokenize_string s in
+  let () =
+    tokens |> List.map Naive_json.json_token_dump |> List.iter print_endline
+  in
+  let parsed = Naive_json._parse_json_tokens tokens in
+  match parsed with
+  | Ok parsed ->
+      let () = print_endline "Parsing sucess" in
+      let back_to_string = Naive_json.string_of_json parsed in
+      print_endline back_to_string
+  | Error (e, bt) -> Printf.printf "%s\n\n%s" e bt
