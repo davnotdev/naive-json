@@ -28,6 +28,8 @@ dune exec naive-json
 
 ## Haskell
 
+Installing a system `ghc` proved challenging, so I recommend using `ghcup` install
+
 ```shell
 cd naive-json-haskell
 stack build
