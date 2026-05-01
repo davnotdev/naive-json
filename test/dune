@@ -1,3 +1,0 @@
-(test
- (name test_naive_json)
- (libraries naive_json))
