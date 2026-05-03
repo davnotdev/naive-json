@@ -46,6 +46,7 @@ library
     exposed-modules:  
         MyLib,
         MyLib.JsonValue,
+        MyLib.JsonToken,
         MyLib.JsonError
 
     -- Modules included in this library but not exported.
