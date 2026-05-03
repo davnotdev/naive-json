@@ -32,7 +32,7 @@ Installing a system `ghc` proved challenging, so I recommend using `ghcup` insta
 
 ```shell
 cd naive-json-haskell
-stack build
-stack run
+cabal build
+cabal run
 ```
 
