@@ -13,9 +13,9 @@ tokenizeJsonString s =
     flushExprAccumWith token f exprAccum =
       if null exprAccum
         then
-          JsonToken.Expression exprAccum : token : f []
-        else
           token : f []
+        else
+          JsonToken.Expression (reverse exprAccum) : token : f []
 
     go "" _ _ = []
     go (c : t) stringState exprAccum =
@@ -28,7 +28,7 @@ tokenizeJsonString s =
         ':' -> flushExprAccumWith JsonToken.Colon (go t stringState) exprAccum
         '"' ->
           flushExprAccumWith
-            (if stringState then JsonToken.StringOpen else JsonToken.StringClose)
+            (if stringState then JsonToken.StringClose else JsonToken.StringOpen)
             (go t (not stringState))
             exprAccum
         cc ->

@@ -33,7 +33,11 @@ main = do
 
   let testParseString =
         "{\n\
-        \    \"hello\": \"world\"\n\
+        \    \"hello\": \"world\",\n\
+        \    \"array\": [\"one\", 2, false],\n\
+        \    \"object\": {\n\
+        \       \"key\": false\n\
+        \    }\n\
         \}"
 
   putStrLn (listString JsonToken.showJsonToken (Json.tokenizeJsonString testParseString))

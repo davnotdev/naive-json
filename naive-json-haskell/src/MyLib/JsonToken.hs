@@ -21,6 +21,6 @@ showJsonToken token = case token of
   ArrayClose -> "ArrayClose"
   StringOpen -> "StringOpen"
   StringClose -> "StringClose"
-  Expression s -> printf "Expression String %s" s
+  Expression s -> printf "Expression \"%s\"" s
   Comma -> "Comma"
   Colon -> "Colon"
