@@ -43,7 +43,7 @@ showJsonValueObjectInner object = go (Map.toList object) ""
     go ((k, v) : t) acc =
       case showJsonValue v of
         Left e -> Left e
-        Right vs -> go t (acc ++ k ++ ": " ++ vs ++ if null t then "" else ", ")
+        Right vs -> go t (acc ++ "\"" ++ k ++ "\": " ++ vs ++ if null t then "" else ", ")
 
 showJsonValueArrayInner :: [JsonValue] -> Either JsonError String
 showJsonValueArrayInner array = go array ""
@@ -58,6 +58,6 @@ showJsonValue :: JsonValue -> Either JsonError String
 showJsonValue value = case value of
   JsonValue.Bool b -> Right (if b then "true" else "false")
   JsonValue.Number n -> Right (show n)
-  JsonValue.String s -> Right s
+  JsonValue.String s -> Right ('\"' : s ++ "\"")
   JsonValue.Array a -> fmap (\s -> "[" ++ s ++ "]") (showJsonValueArrayInner a)
   JsonValue.Object o -> fmap (\s -> "{" ++ s ++ "}") (showJsonValueObjectInner o)
